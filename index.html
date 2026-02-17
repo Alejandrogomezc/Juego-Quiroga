@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+  </head>
+  <body>
+    <!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Escape Literario: El almohadón de plumas</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --muted:#93a6c9; --text:#eef4ff;
+      --good:#45da82; --bad:#ff6471; --accent:#7c5cff; --warn:#ffd27a;
+      --stroke:rgba(255,255,255,.10); --stroke2:rgba(255,255,255,.16);
+      --glass:rgba(255,255,255,.05); --glass2:rgba(0,0,0,.18);
+    }
+    *{ box-sizing:border-box; font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 0%, #1a2a68 0%, var(--bg) 55%),
+        linear-gradient(180deg, #070b18, var(--bg));
+    }
+
+    /* Layout mobile-first */
+    header{
+      padding:16px 14px 10px;
+      max-width:980px; margin:0 auto;
+    }
+    h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+    .sub{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .wrap{
+      max-width:980px; margin:0 auto; padding:12px 14px 20px;
+      display:grid; gap:12px;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+
+    .topline{
+      display:grid; gap:10px;
+    }
+    .pills{
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:999px;
+      background:var(--glass); border:1px solid var(--stroke);
+      font-size:12px; color:var(--muted);
+    }
+    .pill b{ color:var(--text); font-weight:650; }
+
+    .progress{
+      height:10px; border-radius:999px; overflow:hidden;
+      background:rgba(255,255,255,.08);
+    }
+    .bar{
+      height:100%; width:0%;
+      background:linear-gradient(90deg, var(--accent), #4bd2ff);
+      transition:.25s;
+    }
+
+    .log{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:var(--glass2);
+      border:1px dashed rgba(255,255,255,.18);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .btns{ display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    button{
+      flex:1 1 auto;
+      border:1px solid var(--stroke2);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      transition:.15s;
+      font-size:14px;
+    }
+    button:active{ transform:translateY(1px); }
+    button.primary{
+      background:linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.55));
+      border-color:rgba(124,92,255,.55);
+    }
+    button.good{
+      background:linear-gradient(180deg, rgba(69,218,130,.95), rgba(69,218,130,.35));
+      border-color:rgba(69,218,130,.55);
+    }
+    button.bad{
+      background:linear-gradient(180deg, rgba(255,100,113,.95), rgba(255,100,113,.35));
+      border-color:rgba(255,100,113,.55);
+    }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+
+    input, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      font-size:14px;
+    }
+    textarea{ min-height:92px; resize:vertical; }
+
+    .divider{ height:1px; background:rgba(255,255,255,.08); margin:12px 0; }
+
+    /* Tags */
+    .tag{
+      display:inline-block;
+      padding:2px 8px; border-radius:999px; font-size:12px; margin-right:6px;
+      border:1px solid rgba(255,255,255,.12);
+    }
+    .tag.good{ color:#c9ffe1; background:rgba(69,218,130,.12); }
+    .tag.bad{ color:#ffd2d6; background:rgba(255,100,113,.12); }
+    .tag.warn{ color:#ffe9bf; background:rgba(255,210,122,.12); }
+
+    /* Stage */
+    #stageTitle{ margin:0 0 10px; font-size:16px; }
+    #stageBody{ color:var(--muted); line-height:1.45; font-size:14px; }
+    .choice{ display:grid; gap:10px; }
+    .choice button{ text-align:left; }
+
+    /* Drag & Drop (touch-friendly) */
+    .dnd{ display:grid; gap:10px; }
+    .slots,.pieces{ display:grid; gap:10px; grid-template-columns:1fr; }
+    .slot,.piece{
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.05);
+    }
+    .slot{
+      min-height:52px;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .slot em{ color:var(--muted); font-style:normal; font-size:12px; }
+    .piece{ cursor:grab; user-select:none; }
+    .piece:active{ cursor:grabbing; }
+
+    /* Small footer */
+    footer{
+      max-width:980px; margin:0 auto; padding:0 14px 18px;
+      color:rgba(147,166,201,.85); font-size:12px;
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>Escape Literario 🕯️ “El almohadón de plumas”</h1>
+  <p class="sub">Juego móvil: misiones, arrastrar y soltar, decisiones, preguntas con retroalimentación y “código final”.</p>
+</header>
+
+<div class="wrap">
+  <!-- HUD -->
+  <div class="card">
+    <div class="topline">
+      <div class="pills">
+        <span class="pill">Jugador/a: <b id="playerName">Invitado/a</b></span>
+        <span class="pill">Puntaje: <b id="score">0</b></span>
+        <span class="pill">Pistas: <b id="hints">0</b></span>
+        <span class="pill">Misión: <b id="missionLabel">1/4</b></span>
+      </div>
+      <div class="progress" aria-label="Progreso"><div class="bar" id="bar"></div></div>
+    </div>
+
+    <div class="log" id="log">📌 Objetivo: superar 4 misiones para “salir de la casa”.</div>
+
+    <div class="btns">
+      <button class="primary" id="btnStart">Iniciar / Continuar</button>
+      <button id="btnHint">Pedir pista</button>
+      <button class="bad" id="btnReset">Reiniciar</button>
+    </div>
+  </div>
+
+  <!-- Stage -->
+  <div class="card" id="stageCard">
+    <h2 id="stageTitle">Bienvenida</h2>
+    <div id="stageBody">
+      <p><b>Historia:</b> En esta casa hay algo que “chupa” la vida… Tu reto es detectar pistas del <b>ambiente</b>, el <b>vínculo</b> y la <b>enfermedad</b> para entender el giro final.</p>
+      <div class="divider"></div>
+      <label><b>Tu nombre (opcional)</b> para guardar avance en este dispositivo:</label>
+      <input id="nameInput" placeholder="Ej: Valentina, Sara, Mariana…" />
+      <p style="margin:10px 0 0; font-size:13px; color:var(--muted)">Tip: lee con atención: el cuento está lleno de señales.</p>
+    </div>
+    <div class="btns" id="stageActions"></div>
+  </div>
+</div>
+
+<footer>
+  Funciona en cualquier navegador moderno. El avance se guarda en el dispositivo (no se envía a internet).
+</footer>
+
+<script>
+/* =========================
+   Estado + utilidades
+========================= */
+const LS_KEY = "escape_almohadon_state_v2";
+
+let state = {
+  name: "Invitado/a",
+  mission: 0,   // 0..3 (4 = final)
+  score: 0,
+  hints: 0,
+  attempts: 0,
+  correct: 0,
+  solved: { dnd:false, choice:false, quiz:false, code:false }
+};
+
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function load(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw) return;
+  try{ state = Object.assign(state, JSON.parse(raw)); }catch(e){}
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function pct(a,b){ if(!b) return 0; return Math.round((a/b)*100); }
+
+function setLog(msg, tag=null){
+  const el = document.getElementById("log");
+  let prefix="";
+  if(tag==="good") prefix = `<span class="tag good">✔</span>`;
+  if(tag==="bad")  prefix = `<span class="tag bad">✖</span>`;
+  if(tag==="warn") prefix = `<span class="tag warn">⚑</span>`;
+  el.innerHTML = `${prefix}${msg}`;
+}
+
+function award(points){
+  state.score += points;
+  document.getElementById("score").textContent = state.score;
+  save();
+}
+
+function track(correct){
+  state.attempts += 1;
+  if(correct) state.correct += 1;
+  save();
+}
+
+function renderTop(){
+  document.getElementById("playerName").textContent = state.name;
+  document.getElementById("score").textContent = state.score;
+  document.getElementById("hints").textContent = state.hints;
+  // Mostrar misión 1/4 aunque esté en final:
+  const showMission = clamp(state.mission,0,3) + 1;
+  document.getElementById("missionLabel").textContent = `${showMission}/4`;
+  const progress = clamp(((clamp(state.mission,0,4))/4)*100, 0, 100);
+  document.getElementById("bar").style.width = progress+"%";
+}
+
+/* =========================
+   Contenido del juego
+========================= */
+const MISSION_TEXTS = [
+  {
+    title:"Misión 1: La casa como pista",
+    intro:`<p>La casa no es “decorado”: funciona como una <b>máquina emocional</b>.</p>
+           <p><b>Reto:</b> Arrastra cada pieza al lugar correcto (Espacio → Vínculo → Cuerpo → Revelación).</p>`
+  },
+  {
+    title:"Misión 2: El vínculo (elige tu camino)",
+    intro:`<p>Elige la lectura que mejor explica el clima del cuento.</p>
+           <p><b>Reto:</b> La opción correcta te deja avanzar.</p>`
+  },
+  {
+    title:"Misión 3: Enfermedad y nocturnidad",
+    intro:`<p>El relato insiste en un patrón: la vida se le va sobre todo <b>de noche</b>.</p>
+           <p><b>Reto:</b> Responde pensando, no adivinando.</p>`
+  },
+  {
+    title:"Misión 4: Código final (escape)",
+    intro:`<p>Último paso: para “abrir el almohadón” necesitas un <b>código</b> construido con comprensión.</p>
+           <p><b>Reto:</b> 3 claves → 3 dígitos → 1 código.</p>`
+  }
+];
+
+const DND_ORDER = [
+  { id:"p1", text:"La casa: brillo glacial, silencio, frialdad del espacio." },
+  { id:"p2", text:"El vínculo: rigidez, afecto contenido, distancia emocional." },
+  { id:"p3", text:"El cuerpo: enfermedad progresiva, desgaste, palidez/anemia." },
+  { id:"p4", text:"La pista final: lo doméstico puede esconder un horror material." }
+];
+
+const QUESTION_BANK = {
+  quiz: [
+    {
+      q:"¿Qué efecto produce que la casa se describa con frialdad/silencio y brillo ‘glacial’?",
+      options:[
+        "Solo embellece el escenario, sin relación con la historia.",
+        "Refuerza el clima emocional y anticipa el horror dentro de lo doméstico.",
+        "Convierte el cuento en una comedia de costumbres.",
+        "Explica científicamente la enfermedad desde el inicio."
+      ],
+      a:1,
+      why:"La casa amplifica la tensión: vuelve inquietante lo cotidiano y prepara el terror íntimo."
+    },
+    {
+      q:"¿Por qué es importante que los médicos no den una causa clara al principio?",
+      options:[
+        "Porque así el lector se aburre menos.",
+        "Porque el cuento quiere atacar a la medicina moderna.",
+        "Porque aumenta el misterio y prepara el giro final sin revelarlo antes.",
+        "Porque es un dato irrelevante."
+      ],
+      a:2,
+      why:"Mantiene incertidumbre y obliga a buscar pistas en el ambiente y en los síntomas."
+    },
+    {
+      q:"¿Qué relación puede leerse entre el vínculo frío y el deterioro de Alicia?",
+      options:[
+        "Ninguna: son dos historias distintas.",
+        "El clima afectivo contribuye a la sensación de encierro y vulnerabilidad (sin ser la causa biológica).",
+        "Demuestra que Jordán está embrujado.",
+        "Prueba que Alicia finge para llamar la atención."
+      ],
+      a:1,
+      why:"El cuento trabaja por capas: una causa material al final + un clima emocional que hace todo más inquietante."
+    }
+  ],
+  codeClues: [
+    {
+      prompt:"Clave 1: Una palabra que resuma el clima de la casa (ej: “fría”).",
+      validate:(txt)=> /fr[ií]a|glaci|helad|silenc|sombr|r[ií]gid/i.test(txt.trim()),
+      digit: "3",
+      hint:"Piensa en temperatura y sensación de vacío."
+    },
+    {
+      prompt:"Clave 2: Una palabra sobre el vínculo (ej: “distante”).",
+      validate:(txt)=> /dist|seco|callad|indifer|fr[ií]o|r[ií]gid/i.test(txt.trim()),
+      digit: "7",
+      hint:"No es un amor cálido; hay dureza o distancia."
+    },
+    {
+      prompt:"Clave 3: Una palabra del síntoma/idea central (ej: “anemia”).",
+      validate:(txt)=> /anemi|palid|debil|agot|noche|vida|chup|vampir/i.test(txt.trim()),
+      digit: "1",
+      hint:"La palabra médica más usada en lecturas escolares del cuento."
+    }
+  ]
+};
+
+const HINTS = [
+  "M1: Ordena así: Espacio → Vínculo → Cuerpo → Revelación.",
+  "M2: El terror aquí nace en lo doméstico (casa + relación).",
+  "M3: La noche intensifica la sensación de extracción/agotamiento.",
+  "M4: Código = (casa) + (vínculo) + (síntoma), en ese orden."
+];
+
+/* =========================
+   Motor de pantallas
+========================= */
+const stageTitle = document.getElementById("stageTitle");
+const stageBody  = document.getElementById("stageBody");
+const stageActions = document.getElementById("stageActions");
+
+function clearActions(){ stageActions.innerHTML=""; }
+function addBtn(label, cls, fn){
+  const b = document.createElement("button");
+  b.textContent = label;
+  if(cls) b.className = cls;
+  b.onclick = fn;
+  stageActions.appendChild(b);
+}
+
+function goToMission(n){
+  state.mission = clamp(n,0,3);
+  save();
+  renderTop();
+  if(state.mission===0) renderMission1();
+  if(state.mission===1) renderMission2();
+  if(state.mission===2) renderMission3();
+  if(state.mission===3) renderMission4();
+}
+
+function missionDone(){
+  if(state.mission < 3){
+    state.mission += 1;
+    save();
+    renderTop();
+    goToMission(state.mission);
+  }else{
+    renderWin();
+  }
+}
+
+function goHome(){
+  stageTitle.textContent = "Bienvenida";
+  stageBody.innerHTML = `
+    <p><b>Historia:</b> En esta casa hay algo que “chupa” la vida… Tu reto es detectar pistas del <b>ambiente</b>, el <b>vínculo</b> y la <b>enfermedad</b> para entender el giro final.</p>
+    <div class="divider"></div>
+    <label><b>Tu nombre (opcional)</b> para guardar avance en este dispositivo:</label>
+    <input id="nameInput" placeholder="Ej: Valentina, Sara, Mariana…" />
+    <p style="margin:10px 0 0; font-size:13px; color:var(--muted)">Tip: si dudas, pide una pista.</p>
+  `;
+  clearActions();
+  addBtn("Ir a Misión 1", "primary", ()=> goToMission(0));
+}
+
+function resetAll(){
+  localStorage.removeItem(LS_KEY);
+  state = { name:"Invitado/a", mission:0, score:0, hints:0, attempts:0, correct:0,
+            solved:{ dnd:false, choice:false, quiz:false, code:false } };
+  renderTop();
+  setLog("Reiniciado. Puedes empezar desde cero.", "warn");
+  goHome();
+}
+
+/* =========================
+   Misión 1: Drag & Drop
+========================= */
+function renderMission1(){
+  stageTitle.textContent = MISSION_TEXTS[0].title;
+  stageBody.innerHTML = MISSION_TEXTS[0].intro + `
+    <div class="divider"></div>
+    <div class="dnd">
+      <div><b>Arrastra a cada fila:</b></div>
+      <div class="slots" id="slots"></div>
+      <div class="divider"></div>
+      <div><b>Piezas:</b></div>
+      <div class="pieces" id="pieces"></div>
+    </div>
+  `;
+  clearActions();
+
+  const slots = document.getElementById("slots");
+  const pieces = document.getElementById("pieces");
+  const slotLabels = ["1) Espacio","2) Vínculo","3) Cuerpo","4) Revelación"];
+
+  slotLabels.forEach((lab,idx)=>{
+    const s = document.createElement("div");
+    s.className="slot";
+    s.dataset.slot = idx;
+    s.innerHTML = `<b>${lab}</b><em>Soltar aquí</em>`;
+    s.ondragover = (e)=>{ e.preventDefault(); };
+    s.ondrop = (e)=>{
+      e.preventDefault();
+      const pid = e.dataTransfer.getData("text/plain");
+      const el = document.getElementById(pid);
+      if(el){
+        s.innerHTML = `<b>${lab}</b> <span style="color:var(--muted); font-size:13px">${el.dataset.text}</span>`;
+        s.dataset.filled = pid;
+      }
+    };
+    slots.appendChild(s);
+  });
+
+  const shuffled = [...DND_ORDER].sort(()=>Math.random()-0.5);
+  shuffled.forEach(p=>{
+    const d = document.createElement("div");
+    d.className="piece";
+    d.id = p.id;
+    d.draggable = true;
+    d.dataset.text = p.text;
+    d.textContent = "🧩 " + p.text;
+    d.ondragstart = (e)=>{ e.dataTransfer.setData("text/plain", p.id); };
+    pieces.appendChild(d);
+  });
+
+  addBtn("Verificar", "primary", ()=>{
+    const filled = [...document.querySelectorAll(".slot")].map(s=>s.dataset.filled || "");
+    const ok = filled.join("|") === DND_ORDER.map(x=>x.id).join("|");
+    track(ok);
+    if(ok){
+      if(!state.solved.dnd){ award(120); state.solved.dnd=true; save(); }
+      setLog("¡Bien! Espacio → vínculo → cuerpo → revelación. Así se arma el efecto del cuento.", "good");
+      clearActions();
+      addBtn("Continuar", "good", ()=> missionDone());
+    }else{
+      setLog("Aún no. Revisa el orden: Espacio → Vínculo → Cuerpo → Revelación.", "bad");
+    }
+  });
+
+  addBtn("Volver", "", ()=> goHome());
+}
+
+/* =========================
+   Misión 2: Decisión
+========================= */
+function renderMission2(){
+  stageTitle.textContent = MISSION_TEXTS[1].title;
+  stageBody.innerHTML = MISSION_TEXTS[1].intro + `
+    <div class="divider"></div>
+    <div class="choice" id="choiceBox"></div>
+  `;
+  clearActions();
+
+  const box = document.getElementById("choiceBox");
+  const choices = [
+    {
+      t:"A) El terror nace dentro de lo doméstico: casa y vínculo vuelven inquietante lo cotidiano.",
+      ok:true,
+      fb:"Correcto: el cuento construye un terror íntimo. La casa y la relación preparan la vulnerabilidad y el encierro."
+    },
+    {
+      t:"B) Es principalmente una maldición sobrenatural sin relación con la casa ni el matrimonio.",
+      ok:false,
+      fb:"No del todo: el ambiente y el vínculo son claves para que el final tenga fuerza."
+    },
+    {
+      t:"C) Todo se reduce a un hecho médico; lo demás es relleno.",
+      ok:false,
+      fb:"Cuidado: hay causa material al final, pero el cuento funciona por capas (ambiente + vínculo + síntoma)."
+    }
+  ];
+
+  choices.forEach(c=>{
+    const b = document.createElement("button");
+    b.textContent = c.t;
+    b.onclick = ()=>{
+      track(c.ok);
+      if(c.ok){
+        if(!state.solved.choice){ award(140); state.solved.choice=true; save(); }
+        setLog(c.fb, "good");
+        clearActions();
+        addBtn("Continuar", "good", ()=> missionDone());
+      }else{
+        setLog(c.fb, "warn");
+      }
+    };
+    box.appendChild(b);
+  });
+
+  addBtn("Volver", "", ()=> goToMission(0));
+}
+
+/* =========================
+   Misión 3: Quiz
+========================= */
+function renderMission3(){
+  stageTitle.textContent = MISSION_TEXTS[2].title;
+  clearActions();
+
+  const q = QUESTION_BANK.quiz;
+  let idx = 0;
+  let localCorrect = 0;
+
+  function renderQ(){
+    const item = q[idx];
+    stageBody.innerHTML = MISSION_TEXTS[2].intro + `
+      <div class="divider"></div>
+      <p style="margin:0 0 8px"><b>Pregunta ${idx+1}/${q.length}</b></p>
+      <p style="margin:0 0 10px">${item.q}</p>
+      <div class="choice" id="qChoices"></div>
+      <div class="log" id="qFb" style="margin-top:10px">Elige una opción.</div>
+    `;
+    const box = document.getElementById("qChoices");
+    const fb = document.getElementById("qFb");
+
+    item.options.forEach((opt, i)=>{
+      const b = document.createElement("button");
+      b.textContent = opt;
+      b.onclick = ()=>{
+        const ok = (i === item.a);
+        track(ok);
+        if(ok){ localCorrect++; fb.innerHTML = `<span class="tag good">✔</span>${item.why}`; }
+        else{ fb.innerHTML = `<span class="tag bad">✖</span>${item.why}`; }
+        [...box.querySelectorAll("button")].forEach(x=>x.disabled=true);
+      };
+      box.appendChild(b);
+    });
+
+    clearActions();
+    addBtn("Siguiente", "primary", ()=>{
+      if(idx < q.length-1){
+        idx++;
+        renderQ();
+      }else{
+        const okAll = (localCorrect >= 2);
+        if(okAll){
+          if(!state.solved.quiz){ award(200); state.solved.quiz=true; save(); }
+          setLog(`¡Listo! Superaste Misión 3 con ${localCorrect}/${q.length}.`, "good");
+          clearActions();
+          addBtn("Continuar", "good", ()=> missionDone());
+        }else{
+          setLog(`Te faltó poco (${localCorrect}/${q.length}). Reintenta para reforzar la lectura.`, "warn");
+          clearActions();
+          addBtn("Reintentar", "primary", ()=> renderMission3());
+          addBtn("Volver", "", ()=> goToMission(1));
+        }
+      }
+    });
+    addBtn("Volver", "", ()=> goToMission(1));
+  }
+
+  renderQ();
+}
+
+/* =========================
+   Misión 4: Código final
+========================= */
+function renderMission4(){
+  stageTitle.textContent = MISSION_TEXTS[3].title;
+  stageBody.innerHTML = MISSION_TEXTS[3].intro + `
+    <div class="divider"></div>
+    <div id="codeBox"></div>
+    <div class="divider"></div>
+    <label><b>Tu código final (3 dígitos):</b></label>
+    <input id="finalCode" placeholder="Ej: 371" inputmode="numeric" />
+    <div class="btns" style="margin-top:10px">
+      <button class="primary" id="btnCheckCode">Verificar</button>
+    </div>
+    <div class="log" id="codeLog">Resuelve las 3 claves. Cada respuesta correcta te da un dígito.</div>
+  `;
+  clearActions();
+
+  const box = document.getElementById("codeBox");
+  let digits = [];
+
+  function renderClue(i){
+    const clue = QUESTION_BANK.codeClues[i];
+    const d = document.createElement("div");
+    d.className="card";
+    d.innerHTML = `
+      <p style="margin:0 0 6px"><b>${clue.prompt}</b></p>
+      <input id="clue_${i}" placeholder="Escribe aquí…" />
+      <div class="btns" style="margin-top:10px">
+        <button class="good" id="clueBtn_${i}">Validar</button>
+      </div>
+      <div class="log" id="clueFb_${i}">Si fallas, verás una ayuda.</div>
+    `;
+    box.appendChild(d);
+
+    const inp = d.querySelector(`#clue_${i}`);
+    const fb  = d.querySelector(`#clueFb_${i}`);
+    const btn = d.querySelector(`#clueBtn_${i}`);
+
+    btn.onclick = ()=>{
+      const ok = clue.validate(inp.value || "");
+      track(ok);
+      if(ok){
+        if(!digits[i]) digits[i] = clue.digit;
+        fb.innerHTML = `<span class="tag good">✔</span>Correcto. Dígito #${i+1}: <b style="color:var(--text)">${clue.digit}</b>`;
+        inp.disabled = true; btn.disabled = true;
+      }else{
+        fb.innerHTML = `<span class="tag bad">✖</span>Aún no. <b>Ayuda:</b> ${clue.hint}`;
+      }
+    };
+  }
+
+  box.innerHTML = "";
+  for(let i=0;i<3;i++) renderClue(i);
+
+  document.getElementById("btnCheckCode").onclick = ()=>{
+    const input = (document.getElementById("finalCode").value || "").trim();
+    const real = digits.join("");
+    const ok = (input === real && real.length===3);
+    track(ok);
+    if(ok){
+      if(!state.solved.code){ award(300); state.solved.code=true; save(); }
+      state.mission = 4;
+      save();
+      setLog("¡Escapaste! Uniste ambiente, vínculo y síntoma para entender el giro final.", "good");
+      renderWin();
+    }else{
+      setLog("Todavía no. Valida las 3 claves y escribe los 3 dígitos en orden.", "warn");
+    }
+  };
+
+  addBtn("Volver", "", ()=> goToMission(2));
+}
+
+/* =========================
+   Pantalla final
+========================= */
+function renderWin(){
+  stageTitle.textContent = "¡Final alcanzado!";
+  stageBody.innerHTML = `
+    <p style="margin:0 0 10px">✅ Completaste el escape. Si te lo piden, toma captura del puntaje.</p>
+    <div class="divider"></div>
+    <p style="margin:0 0 8px"><b>Reto extra (4–6 líneas):</b> explica cómo la casa y la relación preparan el horror final (sin copiar).</p>
+    <textarea id="miniWrite" placeholder="Escribe aquí…"></textarea>
+    <div class="btns">
+      <button class="primary" id="btnSelfCheck">Autoevaluar</button>
+    </div>
+    <div class="log" id="writeFb">Tip: menciona casa (frío/silencio), vínculo (distancia) y síntoma (desgaste nocturno/anemia).</div>
+  `;
+  clearActions();
+  addBtn("Reiniciar", "bad", ()=> resetAll());
+
+  document.getElementById("btnSelfCheck").onclick = ()=>{
+    const t = (document.getElementById("miniWrite").value || "").toLowerCase();
+    const hits = [
+      /casa|hogar|palacio|habitaci|pared|fr[ií]o|silenc|glaci/,
+      /jord[aá]n|alicia|pareja|v[ií]nculo|dist|r[ií]gid|indifer|seco|callad/,
+      /anemi|palid|enferm|noche|desgast|vida|chup|agot/
+    ].reduce((acc,rx)=> acc + (rx.test(t) ? 1:0), 0);
+
+    const fb = document.getElementById("writeFb");
+    if(hits>=2){
+      fb.innerHTML = `<span class="tag good">✔</span>Vas bien: conectas capas. Si puedes, añade la idea de “terror doméstico”.`;
+      award(50);
+      setLog("Bonus de escritura: +50 puntos.", "good");
+    }else{
+      fb.innerHTML = `<span class="tag warn">⚑</span>Te falta conectar capas. Incluye: casa + vínculo + síntoma (noche/anemia).`;
+      setLog("Revisa tu respuesta y vuelve a intentar.", "warn");
+    }
+  };
+}
+
+/* =========================
+   Botones principales
+========================= */
+document.getElementById("btnStart").onclick = ()=>{
+  const inp = document.getElementById("nameInput");
+  if(inp && inp.value.trim()){
+    state.name = inp.value.trim().slice(0,40);
+    save();
+  }
+  renderTop();
+  if(state.mission>=4) renderWin();
+  else goToMission(state.mission);
+};
+
+document.getElementById("btnReset").onclick = ()=> resetAll();
+
+document.getElementById("btnHint").onclick = ()=>{
+  state.hints += 1;
+  save();
+  renderTop();
+  const idx = clamp(state.hints-1, 0, HINTS.length-1);
+  setLog("Pista: " + HINTS[idx], "warn");
+};
+
+/* =========================
+   Inicio
+========================= */
+load();
+renderTop();
+goHome();
+setLog("📌 Objetivo: superar 4 misiones para “salir de la casa”.", "warn");
+</script>
+</body>
+</html>
+
+  </body>
+</html>
